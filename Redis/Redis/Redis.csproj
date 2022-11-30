@@ -7,4 +7,10 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
+    <ItemGroup>
+      <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
+      <PackageReference Include="Polly" Version="7.2.3" />
+      <PackageReference Include="StackExchange.Redis" Version="2.6.80" />
+    </ItemGroup>
+
 </Project>
