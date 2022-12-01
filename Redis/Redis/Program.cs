@@ -25,6 +25,7 @@ namespace Redis.ConsoleApp
             LoadTools(database);
             
             char ch;
+            
             string userName, lastName;
             do
             {
@@ -60,22 +61,52 @@ namespace Redis.ConsoleApp
                     Console.WriteLine("\nType name then press Enter type lastname then press Enter. Type '+' anywhere in the text to quit:\n");
                 }
             } while (ch != '+');
+
+            var userKeys = ListExistingUsers(database);
+            var toolsOnSite = ListExistingTools(database);
             
             char stop;
-            string userGuid, toolName, action;
+            string userGuid, toolName;
             do
             {
                 Console.WriteLine("Enter user guid to get or return tool from");
                 userGuid = Console.ReadLine();
-                Console.WriteLine("Enter tool name");
+                Console.WriteLine("Enter tool name to get");
                 toolName = Console.ReadLine();
-                Console.WriteLine("Enter action type: get/return");
-                action = Console.ReadLine();
                 try
                 {
-                    if (userGuid.Length != 0 && toolName.Length != 0 && action.Length != 0)
+                    if (userGuid.Length == 0 || toolName.Length == 0 || !userKeys.Contains(userGuid) || !toolsOnSite.Contains(toolName))
                     {
-                        
+                        throw new Exception("Wrong input");
+                    }
+                    
+                    var humanJson = database.StringGet(userGuid);
+                    var human = JsonConvert.DeserializeObject<RentingGuy>(humanJson.ToString());
+                    
+                    var transaction = database.CreateTransaction();
+
+                    toolsOnSite.Remove(toolName);
+                    var updatedTools = new Tools()
+                    {
+                        Id = ToolId,
+                        ToolList = toolsOnSite
+                    };
+                    
+                    var jsonString = JsonConvert.SerializeObject(updatedTools);
+                    transaction.StringSetAsync($"tool-{ToolId}", jsonString);
+                    
+                    human.ReservedTools.Add(toolName);
+                    
+                    var jsonString2 = JsonConvert.SerializeObject(human);
+                    transaction.StringSetAsync(userGuid, jsonString2);
+
+                    var exec = transaction.ExecuteAsync();
+
+                    var result = database.Wait(exec);
+
+                    if (!result)
+                    {
+                        Console.WriteLine("Transaction failed");
                     }
                     
                     Console.WriteLine("Enter + to stop or press enter to continue.");
@@ -89,10 +120,6 @@ namespace Redis.ConsoleApp
                     Console.WriteLine("\nType name then press Enter type lastname then press Enter. Type '+' anywhere in the text to quit:\n");
                 }
             } while (stop != '+');
-
-            //Read recently setted Value From Cache
-            var cachedresponse = database.StringGet("Tool1");
-            Console.WriteLine(cachedresponse.ToString());
         }
         
         private class RentingGuy
@@ -114,6 +141,37 @@ namespace Redis.ConsoleApp
         {
             var jsonString = JsonConvert.SerializeObject(human);
             return database.StringSet($"human-{human.Id}", jsonString);
+        }
+        
+        private static List<string> ListExistingUsers(IDatabase database)
+        {
+            List<string> listKeys = new List<string>();
+            using (ConnectionMultiplexer redis = ConnectionMultiplexer.Connect("localhost:6379,allowAdmin=true"))
+            {
+                var keys = redis.GetServer("localhost", 6379).Keys();
+                listKeys.AddRange(keys.Where(x => x.ToString().StartsWith("human")).Select(key => (string)key).ToList());
+            }
+
+            foreach (var key in listKeys)
+            {
+                var humanJson = database.StringGet(key);
+                var human = JsonConvert.DeserializeObject<RentingGuy>(humanJson.ToString());
+                Console.WriteLine($"Name: {human.Name}, LastName: {human.LastName}, Id: {human.Id}");
+            }
+
+            return listKeys;
+        }
+        
+        private static List<string> ListExistingTools(IDatabase database)
+        {
+            var toolsJson = database.StringGet($"tool-{ToolId}");
+            var tools = JsonConvert.DeserializeObject<Tools>(toolsJson.ToString());
+            foreach (var tool in tools.ToolList)
+            {
+                Console.WriteLine($"Tool: {tool}");
+            }
+            
+            return tools.ToolList;
         }
         
         private static Lazy<ConnectionMultiplexer> lazyConnection = CreateConnection();
