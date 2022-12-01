@@ -2,7 +2,8 @@
 using Polly;
 using Polly.Retry;
 using StackExchange.Redis;
-using System;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace Redis.ConsoleApp
 {
@@ -23,6 +24,32 @@ namespace Redis.ConsoleApp
             
             LoadTools(database);
             
+            char ch;
+            string userName, lastName;
+            do
+            {
+                userName = Console.ReadLine();
+                lastName = Console.ReadLine();
+                try
+                {
+                    Console.WriteLine("Enter fist name");
+                    ch = Convert.ToChar(userName[0]);
+                    Console.WriteLine("Enter last name");
+                    ch = Convert.ToChar(lastName[0]);
+
+                    if (userName.Length != 0 && lastName.Length != 0)
+                    {
+                        Console.WriteLine(userName);
+                    }
+                }
+                catch (OverflowException e)
+                {
+                    Console.WriteLine("{0} Value read.", e.Message);
+                    ch = Char.MinValue;
+                    Console.WriteLine("\nType name then press Enter type lastname then press Enter. Type '+' anywhere in the text to quit:\n");
+                }
+            } while (ch != '+');
+        
             var commandresponse = database.Execute("PING");
             Console.WriteLine(commandresponse.ToString());        
             
@@ -39,6 +66,14 @@ namespace Redis.ConsoleApp
             public int Id { get; set; }
             public string Name { get; set; }
             public string LastName { get; set; }
+            public List<string> ReservedTools { get; set; }
+        }
+
+        private static void AddNewHuman(IDatabase database, RentingGuy human)
+        {
+            var jsonString = JsonConvert.SerializeObject(human);
+            //database.HashSet()
+            database.StringSet($"human{human.Id}", jsonString);
         }
         
         private static Lazy<ConnectionMultiplexer> lazyConnection = CreateConnection();
@@ -59,7 +94,7 @@ namespace Redis.ConsoleApp
             
             for (var i = 0; i < Tools.Count; i++)
             {
-                database.StringSet($"Tool{i + 1}", Tools[i]);
+                database.StringSet(GetHashString(Tools[i]), Tools[i]);
             }
         }
 
@@ -99,6 +134,21 @@ namespace Redis.ConsoleApp
         private static IServer GetServer(string host, int port)
         {
             return retryPolicy.Execute(() => Connection.GetServer(host,port));
+        }
+        
+        private static byte[] GetHash(string inputString)
+        {
+            using (HashAlgorithm algorithm = SHA256.Create())
+                return algorithm.ComputeHash(Encoding.UTF8.GetBytes(inputString));
+        }
+
+        private static string GetHashString(string inputString)
+        {
+            StringBuilder sb = new StringBuilder();
+            foreach (byte b in GetHash(inputString))
+                sb.Append(b.ToString("X2"));
+
+            return sb.ToString();
         }
     }
 }
