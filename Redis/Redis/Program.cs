@@ -42,6 +42,7 @@ namespace Redis.ConsoleApp
                             Id = Guid.NewGuid(),
                             Name = userName,
                             LastName = lastName,
+                            ReservedTools = new List<string>()
                         };
 
                         if (!AddNewHuman(database, newHuman))
@@ -65,6 +66,8 @@ namespace Redis.ConsoleApp
             var userKeys = ListExistingUsers(database);
             var toolsOnSite = ListExistingTools(database);
             
+            Console.ReadLine();
+            
             char stop;
             string userGuid, toolName;
             do
@@ -75,21 +78,20 @@ namespace Redis.ConsoleApp
                 toolName = Console.ReadLine();
                 try
                 {
-                    if (userGuid.Length == 0 || toolName.Length == 0 || !userKeys.Contains(userGuid) || !toolsOnSite.Contains(toolName))
+                    if (userGuid.Length == 0 || toolName.Length == 0 || !userKeys.Contains($"human-{userGuid}") || !toolsOnSite.Contains(toolName))
                     {
                         throw new Exception("Wrong input");
                     }
                     
-                    var humanJson = database.StringGet(userGuid);
+                    var humanJson = database.StringGet($"human-{userGuid}");
                     var human = JsonConvert.DeserializeObject<RentingGuy>(humanJson.ToString());
                     
                     var transaction = database.CreateTransaction();
-
-                    toolsOnSite.Remove(toolName);
+                    
                     var updatedTools = new Tools()
                     {
                         Id = ToolId,
-                        ToolList = toolsOnSite
+                        ToolList = toolsOnSite.Where(x => x != toolName).ToList()
                     };
                     
                     var jsonString = JsonConvert.SerializeObject(updatedTools);
@@ -98,7 +100,7 @@ namespace Redis.ConsoleApp
                     human.ReservedTools.Add(toolName);
                     
                     var jsonString2 = JsonConvert.SerializeObject(human);
-                    transaction.StringSetAsync(userGuid, jsonString2);
+                    transaction.StringSetAsync($"human-{userGuid}", jsonString2);
 
                     var exec = transaction.ExecuteAsync();
 
@@ -134,7 +136,7 @@ namespace Redis.ConsoleApp
         {
             public Guid Id { get; set; }
 
-            public List<string> ToolList { get; set; } = new() { "Lamp", "BigLamp", "Drill", "Hammer drill", "Sander" };
+            public List<string> ToolList { get; set; }
         }
 
         private static bool AddNewHuman(IDatabase database, RentingGuy human)
@@ -156,7 +158,7 @@ namespace Redis.ConsoleApp
             {
                 var humanJson = database.StringGet(key);
                 var human = JsonConvert.DeserializeObject<RentingGuy>(humanJson.ToString());
-                Console.WriteLine($"Name: {human.Name}, LastName: {human.LastName}, Id: {human.Id}");
+                Console.WriteLine($"Name: {human.Name}, LastName: {human.LastName}, Id: {human.Id}, tools: {string.Join( ",", human.ReservedTools.ToArray() )} ");
             }
 
             return listKeys;
@@ -192,7 +194,8 @@ namespace Redis.ConsoleApp
 
             var tools = new Tools()
             {
-                Id = ToolId
+                Id = ToolId,
+                ToolList = new() { "Lamp", "BigLamp", "Drill", "Hammer drill", "Sander" }
             };
             
             var jsonString = JsonConvert.SerializeObject(tools);
