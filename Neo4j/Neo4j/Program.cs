@@ -46,7 +46,8 @@ namespace Neo4j.ConsoleApp
             await using var session = _driver.AsyncSession();
             await session.ExecuteWriteAsync(async tx =>
             {
-                await tx.RunAsync("    MERGE (a:Station:Train {name: 'Traku gelezinkelio stotis', trainCapacity: 1})MERGE (b:Station:Train {name: 'Lentvario gelezinkelio stotis', trainCapacity: 4})MERGE (c:Station:Train {name: 'Vilniaus gelezinkelio stotis', trainCapacity: 10})MERGE (d:Station:Train {name: 'Kauno gelezinkelio stotis', trainCapacity: 5})MERGE (e:Station:Train {name: 'Klaipedos gelezinkelio stotis', trainCapacity: 5})MERGE (c)-[:CONNECTS_TO {price: '10'}]->(d)-[:CONNECTS_TO {price: '10'}]->(c)MERGE (a)-[:CONNECTS_TO {price: '1'}]->(b)-[:CONNECTS_TO {price: '1'}]->(a)MERGE (b)-[:CONNECTS_TO {price: '1.2'}]->(c)-[:CONNECTS_TO {price: '1.2'}]->(b)-[:CONNECTS_TO {price: '4'}]->(d)-[:CONNECTS_TO {price: '4'}]->(b)MERGE (c)-[:CONNECTS_TO {price: '6'}]->(d)-[:CONNECTS_TO {price: '6'}]->(c)-[:CONNECTS_TO {price: '20'}]->(e)-[:CONNECTS_TO {price: '20'}]->(c)MERGE (train1:Train:Electric {name: 'Vilnius-Lentvaris-Trakai-Lenvtaris-Vilnius', peopleCapacity: 60, seatReservation: False})MERGE (train2:Train:Diesel {name: 'Vilnius-Klaipeda-Vilnius', peopleCapacity: 120, seatReservation: True})MERGE (train3:Train:Electric {name: 'Vilnius-Lentvaris-Kaunas-Lenvtaris-Vilnius', peopleCapacity: 80, seatReservation: False})MERGE (train4:Train:Electric {name: 'Vilnius-Kaunas-Vilnius', peopleCapacity: 80, seatReservation: False})MERGE (train1)-[:STOPS_AT]->(a)MERGE (train1)-[:STOPS_AT]->(b)MERGE (train1)-[:STOPS_AT]->(c)MERGE (e)<-[:STOPS_AT]-(train2)-[:STOPS_AT]->(c)MERGE (train3)-[:STOPS_AT]->(c)MERGE (train3)-[:STOPS_AT]->(a)MERGE (train3)-[:STOPS_AT]->(d)MERGE (d)<-[:STOPS_AT]-(train4)-[:STOPS_AT]->(c)");
+                await tx.RunAsync("MERGE (a:Station:Train {name: 'Traku gelezinkelio stotis', trainCapacity: 1})MERGE (b:Station:Train {name: 'Lentvario gelezinkelio stotis', trainCapacity: 4})MERGE (c:Station:Train {name: 'Vilniaus gelezinkelio stotis', trainCapacity: 10})MERGE (d:Station:Train {name: 'Kauno gelezinkelio stotis', trainCapacity: 5})MERGE (e:Station:Train {name: 'Klaipedos gelezinkelio stotis', trainCapacity: 5})MERGE (b)-[:CONNECTS_TO {price: 1}]->(a)MERGE (a)-[:CONNECTS_TO {price: '6'}]->(d)MERGE (c)-[:CONNECTS_TO {price: 3}]->(a)MERGE (b)-[:CONNECTS_TO {price: 2}]->(c)MERGE (d)-[:CONNECTS_TO {price: 5}]->(b)MERGE (d)-[:CONNECTS_TO {price: 7}]->(c)MERGE (c)-[:CONNECTS_TO {price: 20}]->(e)MERGE (e)-[:CONNECTS_TO {price: 15}]->(d)MERGE (train1:Train:Electric {name: 'Vilnius-Lentvaris-Trakai-Lenvtaris-Vilnius', peopleCapacity: 60, seatReservation: False})MERGE (train2:Train:Diesel {name: 'Vilnius-Klaipeda-Vilnius', peopleCapacity: 120, seatReservation: True})MERGE (train3:Train:Electric {name: 'Vilnius-Lentvaris-Kaunas-Lenvtaris-Vilnius', peopleCapacity: 80, seatReservation: False})MERGE (train4:Train:Electric {name: 'Vilnius-Kaunas-Vilnius', peopleCapacity: 80, seatReservation: False})MERGE (train1)-[:STOPS_AT]->(a)MERGE (train1)-[:STOPS_AT]->(b)MERGE (train1)-[:STOPS_AT]->(c)MERGE (b)<-[:STOPS_AT]-(train2)-[:STOPS_AT]->(d)MERGE (e)<-[:STOPS_AT]-(train2)-[:STOPS_AT]->(c)MERGE (train3)-[:STOPS_AT]->(c)MERGE (train3)-[:STOPS_AT]->(a)MERGE (train3)-[:STOPS_AT]->(d)MERGE (d)<-[:STOPS_AT]-(train4)-[:STOPS_AT]->(c)");
+
             });
         }
 
@@ -73,14 +74,14 @@ namespace Neo4j.ConsoleApp
         {
             using var greeter = new Program("bolt://localhost:7687", "neo4j", "test");
             
-            //await greeter.ClearDatabase();
-            //await greeter.ImportDatabaseSchema();
-            //await greeter.FindTrainsByName("Vilnius-Kaunas-Vilnius");
-           // await greeter.FindTrainsThatContainName("Vilnius-Lentvaris");
-            //await greeter.FindTrainsToGetFromStationToStation("Vilniaus gelezinkelio stotis",
-                 // "Kauno gelezinkelio stotis");
-           // await greeter.FindCheepestTrainsToGetFromStationToStation("Vilniaus gelezinkelio stotis",
-                // "Kauno gelezinkelio stotis");
+            await greeter.ClearDatabase();
+            await greeter.ImportDatabaseSchema();
+            await greeter.FindTrainsByName("Vilnius-Kaunas-Vilnius");
+            await greeter.FindTrainsThatContainName("Vilnius-Lentvaris");
+            await greeter.FindTrainsToGetFromStationToStation("Vilniaus gelezinkelio stotis",
+                  "Lentvario gelezinkelio stotis");
+            await greeter.FindShortestToGetFromStationToStation("Vilniaus gelezinkelio stotis",
+                 "Kauno gelezinkelio stotis");
             Console.WriteLine("test");
         }
 
@@ -138,7 +139,7 @@ namespace Neo4j.ConsoleApp
             await using var session = _driver.AsyncSession();
             await session.ExecuteWriteAsync(async tx =>
             {
-                var result = await tx.RunAsync("MATCH (start:Station {name:'" + startStation + "'}), (finish:Station  {name:'" + endStation +"'}), paths = allShortestPaths((start)-[:STOPS_AT*]-(finish)) RETURN [node IN nodes(paths) | Case  WHEN node:Train and not node:Station THEN node.name Else '' END] as resultArray");
+                var result = await tx.RunAsync("MATCH (start:Station {name:'" + startStation + "'}), (end:Station  {name:'" + endStation +"'}), paths = allShortestPaths((start)-[:STOPS_AT*]-(end)) RETURN [node IN nodes(paths) | Case  WHEN node:Train and not node:Station THEN node.name Else '' END] as resultArray");
                 var queryResult = await result.ToListAsync(record => record["resultArray"].As<List<string>>());
                 
                 foreach (var station in queryResult)
@@ -151,17 +152,21 @@ namespace Neo4j.ConsoleApp
             });
         }
         
-        private async Task FindCheepestTrainsToGetFromStationToStation(string startStation, string endStation)
+        private async Task FindShortestToGetFromStationToStation(string startStation, string endStation)
         {
             await using var session = _driver.AsyncSession();
             await session.ExecuteWriteAsync(async tx =>
             {
-                var result = await tx.RunAsync("MATCH (start:Station {name:'" + startStation + "'}), (finish:Station  {name:'" + endStation +"'}), paths = allShortestPaths((start)-[:CONNECTS_TO*]-(finish)) RETURN reduce(acc3 = 0, v3 in [rel in relationships(paths) | rel.price] | acc3 + v3) as cost,[node IN nodes(paths) | node.name] AS cityNames ORDER BY cost Desc");
-                var queryResult = await result.ToListAsync(record => record["cost"].As<int>());
+                var result = await tx.RunAsync("MATCH (start:Station{name:'"+ startStation +"'}), (end:Station{name:'" + endStation+ "'}),paths = allShortestPaths((start) -[:CONNECTS_TO*]-> (end))RETURN paths, reduce(acc3 = 0, v3 in [rel in relationships(paths) | rel.price] | acc3 + v3) as cost,[node IN nodes(paths) | node.name] AS stationNames");
+                var queryResult = await result.ToListAsync(record => (record["cost"].As<int>(), record["stationNames"].As<List<string>>()));
                 
                 foreach (var station in queryResult)
                 {
-                    Console.WriteLine($"{station}");
+                    foreach (var stat in station.Item2)
+                    {
+                        Console.Write($"{stat} - ");
+                    }
+                    Console.Write($"{station.Item1} pinigeliai\n");
                 }
             });
         }
