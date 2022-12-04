@@ -17,16 +17,24 @@ CREATE (:Person:Actor {name: 'Tom Hanks', born: 1956})-[:ACTED_IN {roles: ['Forr
 
 [:STOPS_AT {price: ''}]
 
-CREATE (:Person:Actor {name: 'Tom Hanks', born: 1956})
+
 
     MERGE (a:Station:Train {name: 'Traku gelezinkelio stotis', trainCapacity: 1})
     MERGE (b:Station:Train {name: 'Lentvario gelezinkelio stotis', trainCapacity: 4})
     MERGE (c:Station:Train {name: 'Vilniaus gelezinkelio stotis', trainCapacity: 10})
     MERGE (d:Station:Train {name: 'Kauno gelezinkelio stotis', trainCapacity: 5})
     MERGE (e:Station:Train {name: 'Klaipedos gelezinkelio stotis', trainCapacity: 5})
-    MERGE (a)-[:CONNECTS_TO {price: '1'}]->(b)<-[:CONNECTS_TO {price: '1'}]-(a)
-    MERGE (b)-[:CONNECTS_TO {price: '1.2'}]->(c)<-[:CONNECTS_TO {price: '1.2'}]-(b)-[:CONNECTS_TO {price: '4'}]->(d)<-[:CONNECTS_TO {price: '4'}]-(b)
-    MERGE (c)-[:CONNECTS_TO {price: '6'}]->(d)<-[:CONNECTS_TO {price: '6'}]-(c)-[:CONNECTS_TO {price: '20'}]->(e)<-[:CONNECTS_TO {price: '20'}]-(c)
+
+
+    MERGE (b)-[:CONNECTS_TO {price: 1'}]->(a)
+    MERGE (c)-[:CONNECTS_TO {price: '3'}]->(a)
+    MERGE (a)-[:CONNECTS_TO {price: '6'}]->(d)
+    MERGE (b)-[:CONNECTS_TO {price: '2'}]->(c)
+    MERGE (d)-[:CONNECTS_TO {price: '5'}]->(b)
+    MERGE (d)-[:CONNECTS_TO {price: '7'}]->(c)
+    MERGE (c)-[:CONNECTS_TO {price: '20'}]->(e)
+    MERGE (e)-[:CONNECTS_TO {price: '15'}]->(d)
+
 
 
 
@@ -40,42 +48,14 @@ CREATE (:Person:Actor {name: 'Tom Hanks', born: 1956})
     MERGE (train1)-[:STOPS_AT]->(b)
     MERGE (train1)-[:STOPS_AT]->(c)
     MERGE (e)<-[:STOPS_AT]-(train2)-[:STOPS_AT]->(c)
+    MERGE (b)<-[:STOPS_AT]-(train2)-[:STOPS_AT]->(d)
     MERGE (train3)-[:STOPS_AT]->(c)
     MERGE (train3)-[:STOPS_AT]->(a)
     MERGE (train3)-[:STOPS_AT]->(d)
     MERGE (d)<-[:STOPS_AT]-(train4)-[:STOPS_AT]->(c)
 
 
+    MERGE (a:Station:Train {name: 'Traku gelezinkelio stotis', trainCapacity: 1})MERGE (b:Station:Train {name: 'Lentvario gelezinkelio stotis', trainCapacity: 4})MERGE (c:Station:Train {name: 'Vilniaus gelezinkelio stotis', trainCapacity: 10})MERGE (d:Station:Train {name: 'Kauno gelezinkelio stotis', trainCapacity: 5})MERGE (e:Station:Train {name: 'Klaipedos gelezinkelio stotis', trainCapacity: 5})MERGE (b)-[:CONNECTS_TO {price: '1'}]->(a)MERGE (a)-[:CONNECTS_TO {price: '3'}]->(c)MERGE (b)-[:CONNECTS_TO {price: '2'}]->(c)MERGE (d)-[:CONNECTS_TO {price: '5'}]->(b)MERGE (d)-[:CONNECTS_TO {price: '7'}]->(c)MERGE (c)-[:CONNECTS_TO {price: '20'}]->(e)MERGE (e)-[:CONNECTS_TO {price: '15'}]->(d)MERGE (train1:Train:Electric {name: 'Vilnius-Lentvaris-Trakai-Lenvtaris-Vilnius', peopleCapacity: 60, seatReservation: False})MERGE (train2:Train:Diesel {name: 'Vilnius-Klaipeda-Vilnius', peopleCapacity: 120, seatReservation: True})MERGE (train3:Train:Electric {name: 'Vilnius-Lentvaris-Kaunas-Lenvtaris-Vilnius', peopleCapacity: 80, seatReservation: False})MERGE (train4:Train:Electric {name: 'Vilnius-Kaunas-Vilnius', peopleCapacity: 80, seatReservation: False})MERGE (train1)-[:STOPS_AT]->(a)MERGE (train1)-[:STOPS_AT]->(b)MERGE (train1)-[:STOPS_AT]->(c)MERGE (b)<-[:STOPS_AT]-(train2)-[:STOPS_AT]->(d)MERGE (e)<-[:STOPS_AT]-(train2)-[:STOPS_AT]->(c)MERGE (train3)-[:STOPS_AT]->(c)MERGE (train3)-[:STOPS_AT]->(a)MERGE (train3)-[:STOPS_AT]->(d)MERGE (d)<-[:STOPS_AT]-(train4)-[:STOPS_AT]->(c)
 
 
-
-
-
-
-
-    MERGE (a:Station:Train {name: 'Traku gelezinkelio stotis', trainCapacity: 1})MERGE (b:Station:Train {name: 'Lentvario gelezinkelio stotis', trainCapacity: 4})MERGE (c:Station:Train {name: 'Vilniaus gelezinkelio stotis', trainCapacity: 10})MERGE (d:Station:Train {name: 'Kauno gelezinkelio stotis', trainCapacity: 5})MERGE (e:Station:Train {name: 'Klaipedos gelezinkelio stotis', trainCapacity: 5})MERGE (a) -[:CONNECTS_TO]-> (b)MERGE (b) -[:CONNECTS_TO]-> (a)MERGE (b) -[:CONNECTS_TO]-> (c)MERGE (c) -[:CONNECTS_TO]-> (b)MERGE (b) -[:CONNECTS_TO]-> (d)MERGE (d) -[:CONNECTS_TO]-> (b)MERGE (c) -[:CONNECTS_TO]-> (d)MERGE (d) -[:CONNECTS_TO]-> (c)MERGE (c) -[:CONNECTS_TO]-> (e)MERGE (e) -[:CONNECTS_TO]-> (c)
-
-
-MERGE (a:Station:Train {name: 'Traku gelezinkelio stotis', trainCapacity: 1})MERGE (b:Station:Train {name: 'Lentvario gelezinkelio stotis', trainCapacity: 4})MERGE (c:Station:Train {name: 'Vilniaus gelezinkelio stotis', trainCapacity: 10})MERGE (d:Station:Train {name: 'Kauno gelezinkelio stotis', trainCapacity: 5})MERGE (e:Station:Train {name: 'Klaipedos gelezinkelio stotis', trainCapacity: 5})MERGE (a)-[:CONNECTS_TO]->(b)<-[:CONNECTS_TO]-(a)MERGE (b)-[:CONNECTS_TO]->(c)<-[:CONNECTS_TO]-(b)-[:CONNECTS_TO]->(d)<-[:CONNECTS_TO]-(b)MERGE (c)-[:CONNECTS_TO]->(d)<-[:CONNECTS_TO]-(c)-[:CONNECTS_TO]->(e)<-[:CONNECTS_TO]-(c)
-
-
-
-MERGE (a:Station:Train {name: 'Traku gelezinkelio stotis', trainCapacity: 1})
-    MERGE (b:Station:Train {name: 'Lentvario gelezinkelio stotis', trainCapacity: 4})
-    MERGE (c:Station:Train {name: 'Vilniaus gelezinkelio stotis', trainCapacity: 10})
-    MERGE (d:Station:Train {name: 'Kauno gelezinkelio stotis', trainCapacity: 5})
-    MERGE (e:Station:Train {name: 'Klaipedos gelezinkelio stotis', trainCapacity: 5})
-
-
-    MERGE (a)-[:CONNECTS_TO {price: '1'}]->(b)
-    MERGE (b)-[:CONNECTS_TO {price: '1'}]->(a)
-    MERGE (a)-[:CONNECTS_TO {price: '3'}]->(c)
-    MERGE (c)-[:CONNECTS_TO {price: '3'}]->(a)
-    MERGE (c)-[:CONNECTS_TO {price: '2'}]->(b)
-    MERGE (b)-[:CONNECTS_TO {price: '2'}]->(c)
-    MERGE (b)-[:CONNECTS_TO {price: '5'}]->(d)
-    MERGE (d)-[:CONNECTS_TO {price: '5'}]->(b)
-    MERGE (d)-[:CONNECTS_TO {price: '7'}]->(c)
-    MERGE (c)-[:CONNECTS_TO {price: '7'}]->(d)
-    MERGE (c)-[:CONNECTS_TO {price: '20'}]->(e)
-    MERGE (e)-[:CONNECTS_TO {price: '20'}]->(c)
+ 
