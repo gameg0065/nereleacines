@@ -25,53 +25,53 @@ namespace Cassandra.DB
             
             Console.WriteLine("Data load is done.");
             
-            Console.WriteLine("Show all books available in database:");
+            Console.WriteLine("\nShow all books available in database:");
             var result1 = session.Execute("SELECT * FROM books;").Select(row => (row.GetValue<string>("title"), row.GetValue<string>("releasedate"), row.GetValue<int>("bookid")));
             foreach (var result in result1)
             {
-                Console.WriteLine($"\nBookId - {result.Item3} Book name - {result.Item1}  Release date - {result.Item2}");
+                Console.WriteLine($"BookId - {result.Item3} Book name - {result.Item1}  Release date - {result.Item2}");
             }
             
-            Console.WriteLine("Show books filtered by id:");
+            Console.WriteLine("\nShow books filtered by id:");
             var result2 = session.Execute("SELECT * FROM books WHERE bookID = 1;").Select(row => (row.GetValue<string>("title"), row.GetValue<string>("releasedate"), row.GetValue<int>("bookid")));
             foreach (var result in result2)
             {
-                Console.WriteLine($"{result.Item3} {result.Item1}  {result.Item2}");
+                Console.WriteLine($"BookId - {result.Item3} Book name - {result.Item1}  Release date - {result.Item2}");
             }
             
-            Console.WriteLine("Show books filtered by title:");
+            Console.WriteLine("\nShow books filtered by title:");
             var result3 = session.Execute("SELECT * FROM books_by_title WHERE title = 'Tas';").Select(row => (row.GetValue<string>("title"), row.GetValue<string>("releasedate"), row.GetValue<int>("bookid")));
             foreach (var result in result3)
             {
-                Console.WriteLine($"{result.Item3} {result.Item1}  {result.Item2}");
+                Console.WriteLine($"BookId - {result.Item3} Book name - {result.Item1}  Release date - {result.Item2}");
             }
 
             Console.WriteLine("\nShow books written by J.K. Rowling");
             var result4 = session.Execute("SELECT * FROM books_by_authors WHERE authorId = 2;").Select(row => (row.GetValue<string>("title"), row.GetValue<string>("releasedate"), row.GetValue<int>("bookid")));
             foreach (var result in result4)
             {
-                Console.WriteLine($"{result.Item3} {result.Item1}  {result.Item2}");
+                Console.WriteLine($"BookId - {result.Item3} Book name - {result.Item1}  Release date - {result.Item2}");
             }
             
             Console.WriteLine("\nShow all writers:");
             var result5 = session.Execute("SELECT * FROM authors;").Select(row => (row.GetValue<string>("name"), row.GetValue<string>("lastname"), row.GetValue<int>("authorid")));
             foreach (var result in result5)
             {
-                Console.WriteLine($"{result.Item3} {result.Item1}  {result.Item2}");
+                Console.WriteLine($"AuthorId - {result.Item3} author name - {result.Item1}  author last name - {result.Item2}");
             }
             
             Console.WriteLine("\nFind writer by id:");
             var result6 = session.Execute("SELECT * FROM authors Where authorId = 3;").Select(row => (row.GetValue<string>("name"), row.GetValue<string>("lastname"), row.GetValue<int>("authorid")));
             foreach (var result in result6)
             {
-                Console.WriteLine($"{result.Item3} {result.Item1}  {result.Item2}");
+                Console.WriteLine($"AuthorId - {result.Item3} author name - {result.Item1}  author last name - {result.Item2}");
             }
             
             Console.WriteLine("\nFind writer by bookid:");
             var result7 = session.Execute("SELECT * FROM authors_by_books Where bookid = 3;").Select(row => (row.GetValue<string>("name"), row.GetValue<string>("lastname"), row.GetValue<int>("authorid"), row.GetValue<string>("title")));
             foreach (var result in result7)
             {
-                Console.WriteLine($"{result.Item4} {result.Item3} {result.Item1}  {result.Item2}");
+                Console.WriteLine($"Book title - {result.Item4} AuthorId - {result.Item3} author name - {result.Item1}  author last name - {result.Item2}");
             }
 
 
