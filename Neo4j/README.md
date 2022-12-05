@@ -18,5 +18,30 @@ Paprastumo dėlei, būkite pasiruošę testinius duomenis. Programa turėtų lei
 
 * dotnet build
 * dotnet run
-* 
+
+### Graph model:
+![](main0.png)
+
+```
+Duombaze importuota sekmingai.
+
+Find existing trains by name:
+Vilnius-Kaunas-Vilnius, 80, False
+
+Find existing trains that begins with Vilnius-Lentvaris:
+Vilnius-Lentvaris-Trakai-Lenvtaris-Vilnius, 60, False
+Vilnius-Lentvaris-Kaunas-Lenvtaris-Vilnius, 80, False
+
+Find trains that get from station to station:
+Vilnius-Lentvaris-Trakai-Lenvtaris-Vilnius
+Vilnius-Klaipeda-Vilnius
+
+Find trains shortest trains to get from and to station:
+Vilniaus gelezinkelio stotis - Klaipedos gelezinkelio stotis - Kauno gelezinkelio stotis - 35 pinigeliai
+Vilniaus gelezinkelio stotis - Traku gelezinkelio stotis - Kauno gelezinkelio stotis - 9 pinigeliai
+
+Find trains to get from and to station with limited number of hopes:
+Stations:Vilniaus gelezinkelio stotis - Traku gelezinkelio stotis - Kauno gelezinkelio stotis - Price per stations: 3 - 6 -  total price - 9 pinigeliai
+Stations:Vilniaus gelezinkelio stotis - Klaipedos gelezinkelio stotis - Kauno gelezinkelio stotis - Price per stations: 20 - 15 -  total price - 35 pinigeliai
+```
 
