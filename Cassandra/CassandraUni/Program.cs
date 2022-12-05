@@ -16,10 +16,12 @@ namespace Cassandra.DB
                 .Build();
             var session = cluster.Connect("duombaziuuni");
             Console.WriteLine("Connected to cluster: " + cluster.Metadata.ClusterName);
+            
             CreateAuthorTable(session);
             CreateBooksTable(session);
             CreateBooksTableByTitle(session);
             CreateBooksTableByAuthors(session);
+            CreateAuthorsTableByBooks(session);
             
             Console.WriteLine("Data load is done.");
             
@@ -27,7 +29,7 @@ namespace Cassandra.DB
             var result1 = session.Execute("SELECT * FROM books;").Select(row => (row.GetValue<string>("title"), row.GetValue<string>("releasedate"), row.GetValue<int>("bookid")));
             foreach (var result in result1)
             {
-                Console.WriteLine($"{result.Item3} {result.Item1}  {result.Item2}");
+                Console.WriteLine($"\nBookId - {result.Item3} Book name - {result.Item1}  Release date - {result.Item2}");
             }
             
             Console.WriteLine("Show books filtered by id:");
@@ -51,18 +53,25 @@ namespace Cassandra.DB
                 Console.WriteLine($"{result.Item3} {result.Item1}  {result.Item2}");
             }
             
-            Console.WriteLine("\nShow all writters:");
+            Console.WriteLine("\nShow all writers:");
             var result5 = session.Execute("SELECT * FROM authors;").Select(row => (row.GetValue<string>("name"), row.GetValue<string>("lastname"), row.GetValue<int>("authorid")));
             foreach (var result in result5)
             {
                 Console.WriteLine($"{result.Item3} {result.Item1}  {result.Item2}");
             }
             
-            Console.WriteLine("\nFind writter by id:");
+            Console.WriteLine("\nFind writer by id:");
             var result6 = session.Execute("SELECT * FROM authors Where authorId = 3;").Select(row => (row.GetValue<string>("name"), row.GetValue<string>("lastname"), row.GetValue<int>("authorid")));
             foreach (var result in result6)
             {
                 Console.WriteLine($"{result.Item3} {result.Item1}  {result.Item2}");
+            }
+            
+            Console.WriteLine("\nFind writer by bookid:");
+            var result7 = session.Execute("SELECT * FROM authors_by_books Where bookid = 3;").Select(row => (row.GetValue<string>("name"), row.GetValue<string>("lastname"), row.GetValue<int>("authorid"), row.GetValue<string>("title")));
+            foreach (var result in result7)
+            {
+                Console.WriteLine($"{result.Item4} {result.Item3} {result.Item1}  {result.Item2}");
             }
 
 
@@ -92,6 +101,14 @@ namespace Cassandra.DB
             session.Execute("DROP TABLE if exists books_by_authors;");
             session.Execute("CREATE TABLE books_by_authors (authorID INT, bookID INT, title TEXT, releaseDate TEXT, name TEXT,lastName TEXT, PRIMARY KEY ((authorID), bookID, name));");
             session.Execute("BEGIN BATCH INSERT INTO books_by_authors (authorID, bookID, title, releaseDate, name, lastName) VALUES (1, 1,'Hamletas', '1605', 'William', 'Shakespeare' );INSERT INTO books_by_authors (authorID, bookID, title, releaseDate, name, lastName) VALUES (1, 2,'Romeo ir Džiuljeta', '1597', 'William', 'Shakespeare');INSERT INTO books_by_authors (authorID, bookID, title, releaseDate, name, lastName) VALUES (1, 3,'Karalius Lyras', '1608', 'William', 'Shakespeare');INSERT INTO books_by_authors (authorID, bookID, title, releaseDate, name, lastName) VALUES (2,4,'Haris Poteris ir išminties akmuo', '1997', 'Joanne', 'Rowling');INSERT INTO books_by_authors (authorID, bookID, title, releaseDate, name, lastName) VALUES (2,5,'Haris Poteris ir paslapčių kambarys', '1998', 'Joanne', 'Rowling');INSERT INTO books_by_authors (authorID, bookID, title, releaseDate, name, lastName) VALUES (2,6,'Haris Poteris ir Azkabano kalinys', '1999', 'Joanne', 'Rowling');INSERT INTO books_by_authors (authorID, bookID, title, releaseDate, name, lastName) VALUES (2,7,'Haris Poteris ir Ugnies taurė', '2000', 'Joanne', 'Rowling');INSERT INTO books_by_authors (authorID, bookID, title, releaseDate, name, lastName) VALUES (2,8,'Haris Poteris ir Fenikso brolija', '2003', 'Joanne', 'Rowling');INSERT INTO books_by_authors (authorID, bookID, title, releaseDate, name, lastName) VALUES (2,9,'Haris Poteris ir Netikras Princas', '2005', 'Joanne', 'Rowling');INSERT INTO books_by_authors (authorID, bookID, title, releaseDate, name, lastName) VALUES (2,10,'Haris Poteris ir Mirties relikvijos', '2007', 'Joanne', 'Rowling');INSERT INTO books_by_authors (authorID, bookID, title, releaseDate, name, lastName) VALUES (2,11,'Fantastiniai gyvūnai ir kur juos rasti', '2001', 'Joanne', 'Rowling');INSERT INTO books_by_authors (authorID, bookID, title, releaseDate, name, lastName) VALUES (3,12,'Žmogžudystė Rytų eksprese', '1934', 'Agatha', 'Christie');INSERT INTO books_by_authors (authorID, bookID, title, releaseDate, name, lastName) VALUES (3,13,'Mirtis ant Nilo', '1937', 'Agatha', 'Christie');INSERT INTO books_by_authors (authorID, bookID, title, releaseDate, name, lastName) VALUES (4,14,'Tas', '1986', 'Stephen', 'King');INSERT INTO books_by_authors (authorID, bookID, title, releaseDate, name, lastName) VALUES (4,15,'Fairy Tale', '2022', 'Stephen', 'King');INSERT INTO books_by_authors (authorID, bookID, title, releaseDate, name, lastName) VALUES (5,16,'Maigret', '1934', 'Georges', 'Simenon');INSERT INTO books_by_authors (authorID, bookID, title, releaseDate, name, lastName) VALUES (5,17,'The blue room', '1964', 'Georges', 'Simenon'); APPLY BATCH;");
+            //session.Execute("BEGIN BATCH APPLY BATCH;");
+        }
+        
+        private static void CreateAuthorsTableByBooks(ISession session)
+        {
+            session.Execute("DROP TABLE if exists authors_by_books;");
+            session.Execute("CREATE TABLE authors_by_books (authorID INT, bookID INT, title TEXT, releaseDate TEXT, name TEXT,lastName TEXT, PRIMARY KEY ((bookID), authorID, name));");
+            session.Execute("BEGIN BATCH INSERT INTO authors_by_books (authorID, bookID, title, releaseDate, name, lastName) VALUES (1, 1,'Hamletas', '1605', 'William', 'Shakespeare' );INSERT INTO authors_by_books (authorID, bookID, title, releaseDate, name, lastName) VALUES (1, 2,'Romeo ir Džiuljeta', '1597', 'William', 'Shakespeare');INSERT INTO authors_by_books (authorID, bookID, title, releaseDate, name, lastName) VALUES (1, 3,'Karalius Lyras', '1608', 'William', 'Shakespeare');INSERT INTO authors_by_books (authorID, bookID, title, releaseDate, name, lastName) VALUES (2,4,'Haris Poteris ir išminties akmuo', '1997', 'Joanne', 'Rowling');INSERT INTO authors_by_books (authorID, bookID, title, releaseDate, name, lastName) VALUES (2,5,'Haris Poteris ir paslapčių kambarys', '1998', 'Joanne', 'Rowling');INSERT INTO authors_by_books (authorID, bookID, title, releaseDate, name, lastName) VALUES (2,6,'Haris Poteris ir Azkabano kalinys', '1999', 'Joanne', 'Rowling');INSERT INTO authors_by_books (authorID, bookID, title, releaseDate, name, lastName) VALUES (2,7,'Haris Poteris ir Ugnies taurė', '2000', 'Joanne', 'Rowling');INSERT INTO authors_by_books (authorID, bookID, title, releaseDate, name, lastName) VALUES (2,8,'Haris Poteris ir Fenikso brolija', '2003', 'Joanne', 'Rowling');INSERT INTO authors_by_books (authorID, bookID, title, releaseDate, name, lastName) VALUES (2,9,'Haris Poteris ir Netikras Princas', '2005', 'Joanne', 'Rowling');INSERT INTO authors_by_books (authorID, bookID, title, releaseDate, name, lastName) VALUES (2,10,'Haris Poteris ir Mirties relikvijos', '2007', 'Joanne', 'Rowling');INSERT INTO authors_by_books (authorID, bookID, title, releaseDate, name, lastName) VALUES (2,11,'Fantastiniai gyvūnai ir kur juos rasti', '2001', 'Joanne', 'Rowling');INSERT INTO authors_by_books (authorID, bookID, title, releaseDate, name, lastName) VALUES (3,12,'Žmogžudystė Rytų eksprese', '1934', 'Agatha', 'Christie');INSERT INTO authors_by_books (authorID, bookID, title, releaseDate, name, lastName) VALUES (3,13,'Mirtis ant Nilo', '1937', 'Agatha', 'Christie');INSERT INTO authors_by_books (authorID, bookID, title, releaseDate, name, lastName) VALUES (4,14,'Tas', '1986', 'Stephen', 'King');INSERT INTO authors_by_books (authorID, bookID, title, releaseDate, name, lastName) VALUES (4,15,'Fairy Tale', '2022', 'Stephen', 'King');INSERT INTO authors_by_books (authorID, bookID, title, releaseDate, name, lastName) VALUES (5,16,'Maigret', '1934', 'Georges', 'Simenon');INSERT INTO authors_by_books (authorID, bookID, title, releaseDate, name, lastName) VALUES (5,17,'The blue room', '1964', 'Georges', 'Simenon'); APPLY BATCH;");
             //session.Execute("BEGIN BATCH APPLY BATCH;");
         }
     }
